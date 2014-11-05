@@ -1,10 +1,8 @@
-require 'pry'
 class SinglyLinkedList
   Node = Struct.new(:data, :next)
 
   def initialize
     @head = nil
-    @current_node = nil
     @count = 0
   end
   
@@ -12,52 +10,47 @@ class SinglyLinkedList
     node = Node.new(item, nil)
     node.next = @head if @head
     @head = node
-    @current_node = node
     @count += 1
   end
 
   def find(item)
     node = @head
     while node
-      if node.data == item
-        @current_node = node
-        return true
-      elsif node.next == nil
-        return false
-      end
+      return node if node.data == item
       node = node.next
     end
   end
 
-  def insert(item)
-    if @current_node
-      node = Node.new(item, @current_node.next)
-      @current_node.next = node
+  def insert(insert_location, insert_item)
+    insert_location_node = find(insert_location)
+    if insert_location_node
+      node = Node.new(insert_item, insert_location_node.next)
+      insert_location_node.next = node
       @count += 1
+    else
+      puts "insert location is not exist."
     end
   end
 
-  def remove
-    # binding.pry
-    if size == 1
-      initialize
-      return true
-    elsif @head == @current_node
-      @head = @current_node.next
-      @current_node = @head
-      @count -= 1
-      return true
-    else
-      node = @head
-      while node
-        if @current_node.data == node.next.data
-          node.next = @current_node.next
-          @current_node = node
-          @count -= 1
-          return true
+  def remove(item)
+    to_be_removed_node = find(item)
+    if to_be_removed_node
+      if size == 1
+        @head = nil
+      elsif to_be_removed_node = @head
+        @head = @head.next
+      else
+        node = @head
+        while node.next
+          if to_be_removed_node.data == node.next.data
+            node.next = to_be_removed_node.next
+          end
+          node = node.next
         end
-        node = node.next
       end
+      @count -= 1
+    else
+      puts "remove item is not exist."
     end
   end
 
@@ -67,23 +60,22 @@ class SinglyLinkedList
 
   def to_s
     node = @head
-    while node
-      current_node = node.data
+    list_string = node.data.to_s
+    while node.next
+      list_string += " -> #{node.next.data}"
       node = node.next
-      puts current_node
     end
+    list_string
   end
 end
 
 singly_list = SinglyLinkedList.new
 singly_list.add(1)
 singly_list.add(2)
-singly_list.insert(3)
-singly_list.to_s
-singly_list.find(3)
-singly_list.insert(0)
-singly_list.remove
-singly_list.to_s
-singly_list.remove
-singly_list.to_s
+singly_list.insert(2,3)
+puts singly_list # "2 -> 3 -> 1"
+singly_list.remove(2)
+puts singly_list # "3 -> 1"
+singly_list.remove(1)
+puts singly_list # "3"
 puts singly_list.size
