@@ -25,20 +25,7 @@ class HashTable
   end
 
   def get(key)
-    initial_index = hash_function(key)
-    index = initial_index
-
-    while @slots[index] #如果到达一个空桶，或者又回到初始位置，则说明没有关键字为Key的元素
-      return @values[index] if @slots[index] == key
-
-      if index == (@size - 1)
-        index = 0
-      else
-        index += 1
-      end
-
-      break if index == initial_index #
-    end
+    @values[@slots.index(key)]
   end
 
   def hash_function(key)
@@ -54,11 +41,11 @@ class HashTable
   end
 
   def keys
-    @slots
+    @slots.compact
   end
 
   def values
-    @values
+    @values.compact
   end
 
   def size
