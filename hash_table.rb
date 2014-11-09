@@ -3,33 +3,45 @@ class HashTable
     @size = size
     @slots = Array.new(size)
     @values = Array.new(size)
-    @used_size = 0
   end
   
   def put(key, value)
-    resize if (@used_size.to_f / @size) > 0.7
+    resize if (@slots.compact.length.to_f / @size) > 0.7
 
-    index = hash_function(key)
+    hash_value = hash_function(key)
 
-    while @slots[index]
-      if index == (@size - 1) #如果已到达数组最后一位，那么从头再开始
-        index = 0
+    loop do
+      if @slots[hash_value].nil?
+        @slots[hash_value] = key
+        @values[hash_value] = value
+        return value
+      elsif @slots[hash_value] == key
+        @values[hash_value] = value
+        return value
       else
-        index += 1
+        hash_value = refresh(hash_value)
       end
     end
-
-    @slots[index] = key
-    @values[index] = value
-    @used_size += 1
   end
 
   def get(key)
-    @values[@slots.index(key)]
+    hash_value = hash_function(key)
+
+    loop do
+      if @slots[hash_value] == key
+        return @values[hash_value]
+      else
+        hash_value = refresh(hash_value)
+      end
+    end
   end
 
   def hash_function(key)
     key.chars.map(&:ord).reduce(&:+) % @size
+  end
+
+  def refresh(hash_value)
+    (hash_value + 1) % @size
   end
 
   def [](key)
@@ -49,7 +61,7 @@ class HashTable
   end
 
   def size
-    @size
+    @slots.compact.length
   end
 
   def resize
@@ -68,11 +80,12 @@ end
 
 hash_table = HashTable.new(1)
 hash_table["abc"] = 123
+hash_table["abc"] = 234
 puts hash_table.size
 hash_table.put("xyz", 456)
 puts hash_table.size
 hash_table.put("acb", 789)
 
-puts hash_table["abc"] #=> 123
+puts hash_table["abc"] #=> 234
 puts hash_table["xyz"] #=> 456
 puts hash_table.get("acb") #=> 789
