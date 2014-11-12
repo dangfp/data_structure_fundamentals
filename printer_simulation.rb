@@ -1,3 +1,4 @@
+require 'pry'
 class PrintQueue
   def initialize
     @tasks = []
@@ -27,9 +28,9 @@ class PrintQueue
     size == 0
   end
 
-  def pages_in_queue
-    @tasks.reduce(0) {|total_pages, task| total_pages + task.pages}
-  end
+  # def pages_in_queue
+  #   @tasks.reduce(0) {|total_pages, task| total_pages + task.pages}
+  # end
 end
 
 class Task
@@ -43,8 +44,8 @@ end
 class Printer
   attr_reader :current_task
 
-  def initialize(print_rate)
-    @print_rate = print_rate
+  def initialize(ppm)
+    @ppm = ppm
   end
 
   def idle?
@@ -60,13 +61,13 @@ class Printer
   end
 
   def print_page
-    @current_task.pages = @current_task.pages - @print_rate
+    @current_task.pages = @current_task.pages - (@ppm / 60.0)
   end
 end
 
-def simulate!(print_rate)
+def simulate!(ppm)
   @print_queue = PrintQueue.new
-  @printer = Printer.new(print_rate)
+  @printer = Printer.new(ppm)
   total_tasks_enqueue = 0
   total_pages_enqueue = 0
   current_second = 0
@@ -90,11 +91,11 @@ def simulate!(print_rate)
     current_second += 1
   end
   average_waiting_time = waiting_times.reduce(&:+) / waiting_times.size
-  meet_requirements = (print_rate * 28800) >= total_pages_enqueue ? "Yes" : "No"
-  puts "---------The simulated result of print_rate is #{print_rate}----------"
+  meet_requirements = average_waiting_time <= 120 ? "Yes" : "No" #等待时间小等于120秒满足要求
+  puts "---------The simulated result of the #{ppm} ppm printer----------"
   puts "Meet the office requirements:#{meet_requirements}"
   puts "average waiting time is #{average_waiting_time}, #{total_tasks_enqueue} tasks in queue, #{total_pages_enqueue} total pages"
 end
 
-10.times {simulate!(1)}
-10.times {simulate!(0.5)}
+10.times {simulate!(60)}
+10.times {simulate!(30)}
